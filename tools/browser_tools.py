@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 from unstructured.partition.html import partition_html
 from crewai import Agent, Task
 from crewai import LLM
+from crewai import Crew
 
 class WebsiteInput(BaseModel):
     website: str = Field(..., description="The website URL to scrape")
@@ -47,8 +48,9 @@ class BrowserTools(BaseTool):
                     agent=agent
                     
                 )
-                summary = task.execute()
-                summaries.append(summary)
+                crew = Crew(agents=[agent], tasks=[task])
+                result = crew.kickoff()
+                summaries.append(str(result.raw))
             return "\n\n".join(summaries)
         except Exception as e:
             return f"Error while processing website: {str(e)}"
